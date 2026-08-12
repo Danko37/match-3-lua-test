@@ -174,16 +174,26 @@ function Model:findMatches()
     return marked, found
 end
 
--- tick() - один шаг игры: удалить тройки, сдвинуть вниз, досыпать сверху
-function Model:tick()
+--[[tick() - один шаг игры: удалить тройки, сдвинуть вниз, досыпать сверху.
+    onStep - функция, которую зовём после каждого изменения поля (аналог делегата Action из c#).
+    Что показывать и сколько ждать решает main, модель только говорит "тут поле изменилось".]]
+function Model:tick(onStep)
+    onStep = onStep or function() end -- что бы tick можно было звать и без показа
+
     local marked, found = self:findMatches()
     if not found then
         return false -- ничего не изменилось, каскад зАакончен
     end
 
     self:removeMatches(marked)
+    onStep() -- дырки на месте лопнувших кристалов
+
     self:applyGravity()
+    onStep() -- кристалы упали вниз, дырки уехали наверх
+
     self:refill()
+    onStep() -- досыпали новые сверху
+
     return true
 end
 

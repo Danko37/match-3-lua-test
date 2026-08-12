@@ -28,7 +28,7 @@ function View:render(grid, width, height)
             if gem then                         -- расстояние между клетками по горизонтали
                 row = row .. gem:getSymbol() .. " "; 
             else
-                row = row .. "."; -- пустая клетка
+                row = row .. ". "; -- пустая клетка. Пробел такой же, как у кристалла, что бы столбцы не съезжали
             end
         end
         print(row);

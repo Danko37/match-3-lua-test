@@ -22,6 +22,12 @@ local function sleep(seconds)
     end
 end
 
+--Показать поле и дать игроку время разглядеть, что изменилось
+local function showStep(model)
+    model:render();
+    sleep(TICK_DELAY);
+end
+
 local function parseCommand(line)
     line = line:lower();
 
@@ -50,31 +56,34 @@ end
 -- потом проверка на тупик.]]
 local function playTurn(model, view, command)
     -- Игрок вводит 0..9, а таблицы в Lua нумеруются с 1.
-    local from = { x = command.x + 1, y = command.y + 1 }
-    local delta = DIRECTIONS[command.dir]
-    local to = { x = from.x + delta.x, y = from.y + delta.y }
+    local from = { x = command.x + 1, y = command.y + 1 };
+    local delta = DIRECTIONS[command.dir];
+    local to = { x = from.x + delta.x, y = from.y + delta.y };
 
-    local ok, reason = model:move(from, to)
+    local ok, reason = model:move(from, to);
     if not ok then
-        view:message("Ход невозможен: " .. reason)
+        view:message("Ход невозможен: " .. reason);
         return
     end
 
     --Показываем поле сразу после обмена кристаллов.
-    model:render()
-    sleep(TICK_DELAY)
+    showStep(model);
 
-    --Крутим тики, пока на поле хоть что-то меняется.
-    while model:tick() do
-        model:render()
-        sleep(TICK_DELAY)
+    --[[Крутим тики, пока на поле хоть что-то меняется.
+        tick сам позовёт showStep после каждой своей фазы.]]
+    local function onStep()
+        showStep(model);
+    end
+
+    while model:tick(onStep) do
+        -- показывать здесь уже нечего, всё показал tick
     end
 
     --Ходов не осталось - мешаем поле, чтобы игра могла продолжаться.
     if not model:hasPossibleMove() then
-        view:message("Возможных ходов нет, перемешиваю поле")
-        model:mix()
-        model:render()
+        view:message("Возможных ходов нет, перемешиваю поле");
+        model:mix();
+        showStep(model);
     end
 end
 
